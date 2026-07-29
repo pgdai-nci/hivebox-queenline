@@ -99,6 +99,14 @@ Key patterns:
   README.md                     Deployment instructions
 ```
 
+## Files NOT to include
+
+Do NOT copy any of these into the new project:
+- Screenshots or image files (`.png`, `.jpg`, `.gif`)
+- `agent-persona-template.md` or `five-innovators-spec.md` — use them as reference only, do not commit them
+- The existing HiveBox chatbot's `index.html` or worker code — build fresh from the spec
+- Any `.env`, `.dev.vars`, or files containing secrets
+
 ## Guardrails
 
 - Never hardcode the API key in source code. Use Cloudflare Worker secrets.
@@ -106,3 +114,4 @@ Key patterns:
 - The chatbot persona MUST state it is an AI colleague, not a human.
 - The system prompt must include triage rules specific to the company's #1 support issue.
 - Do not redesign the existing HiveBox chatbot unless explicitly asked.
+- Only create the files listed in "Files to create". Do not bring in unrelated files.
