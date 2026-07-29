@@ -49,7 +49,7 @@ async function handleRequest(request) {
       body.system_instruction = system_instruction;
     }
 
-    const GEMINI_MODEL = 'gemini-2.0-flash';
+    const GEMINI_MODEL = 'gemini-3.5-flash-lite';
     const GEMINI_URL = 'https://generativelanguage.googleapis.com/v1beta/models/' + GEMINI_MODEL + ':generateContent';
     const url = GEMINI_URL + '?key=' + encodeURIComponent(apiKey);
 
