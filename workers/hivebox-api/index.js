@@ -5,41 +5,39 @@ addEventListener('fetch', event => {
   event.respondWith(handleRequest(event.request));
 });
 
+async const CORS_HEADERS = {
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Methods': 'POST, OPTIONS',
+  'Access-Control-Allow-Headers': 'Content-Type',
+  'Access-Control-Max-Age': '86400',
+};
+
+function jsonResponse(body, status = 200) {
+  return new Response(JSON.stringify(body), {
+    status,
+    headers: { 'Content-Type': 'application/json', ...CORS_HEADERS },
+  });
+}
+
 async function handleRequest(request) {
   if (request.method === 'OPTIONS') {
-    return new Response(null, {
-      headers: {
-        'Access-Control-Allow-Origin': '*',
-        'Access-Control-Allow-Methods': 'POST, OPTIONS',
-        'Access-Control-Allow-Headers': 'Content-Type',
-        'Access-Control-Max-Age': '86400',
-      },
-    });
+    return new Response(null, { headers: CORS_HEADERS });
   }
 
   if (request.method !== 'POST') {
-    return new Response(JSON.stringify({ error: 'Method not allowed' }), {
-      status: 405,
-      headers: { 'Content-Type': 'application/json' },
-    });
+    return jsonResponse({ error: 'Method not allowed' }, 405);
   }
 
   const apiKey = GEMINI_API_KEY;
   if (!apiKey) {
-    return new Response(JSON.stringify({ error: 'Server configuration error: API key not set' }), {
-      status: 500,
-      headers: { 'Content-Type': 'application/json' },
-    });
+    return jsonResponse({ error: 'Server configuration error: API key not set' }, 500);
   }
 
   try {
     const { contents, system_instruction } = await request.json();
 
     if (!contents || !Array.isArray(contents) || contents.length === 0) {
-      return new Response(JSON.stringify({ error: 'Missing or invalid contents array' }), {
-        status: 400,
-        headers: { 'Content-Type': 'application/json' },
-      });
+      return jsonResponse({ error: 'Missing or invalid contents array' }, 400);
     }
 
     const body = {
@@ -51,6 +49,8 @@ async function handleRequest(request) {
       body.system_instruction = system_instruction;
     }
 
+    const GEMINI_MODEL = 'gemini-2.0-flash';
+    const GEMINI_URL = 'https://generativelanguage.googleapis.com/v1beta/models/' + GEMINI_MODEL + ':generateContent';
     const url = GEMINI_URL + '?key=' + encodeURIComponent(apiKey);
 
     const geminiRes = await fetch(url, {
@@ -62,34 +62,19 @@ async function handleRequest(request) {
     const data = await geminiRes.json();
 
     if (!geminiRes.ok) {
-      return new Response(JSON.stringify({
+      return jsonResponse({
         error: data.error?.message || 'Gemini API error: HTTP ' + geminiRes.status,
-      }), {
-        status: geminiRes.status,
-        headers: { 'Content-Type': 'application/json' },
-      });
+      }, geminiRes.status);
     }
 
     const reply = data.candidates?.[0]?.content?.parts?.[0]?.text || '';
     if (!reply) {
-      return new Response(JSON.stringify({ error: 'Empty response from Gemini' }), {
-        status: 502,
-        headers: { 'Content-Type': 'application/json' },
-      });
+      return jsonResponse({ error: 'Empty response from Gemini' }, 502);
     }
 
-    return new Response(JSON.stringify({ reply }), {
-      status: 200,
-      headers: {
-        'Content-Type': 'application/json',
-        'Access-Control-Allow-Origin': '*',
-      },
-    });
+    return jsonResponse({ reply });
 
   } catch (err) {
-    return new Response(JSON.stringify({ error: err.message }), {
-      status: 500,
-      headers: { 'Content-Type': 'application/json' },
-    });
+    return jsonResponse({ error: err.message }, 500);
   }
 }
