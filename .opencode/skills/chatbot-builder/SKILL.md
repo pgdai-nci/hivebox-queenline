@@ -1,9 +1,9 @@
 ---
-name: queeenline-builder
-description: Use when the user wants to build a new QueenLine-style customer-care chatbot for any company or domain. Follows the same architecture as HiveBox: GitHub Pages frontend, Cloudflare Worker proxy, Gemini LLM, and Five Innovators agent personas. NOT for editing the existing chatbot or general web development.
+name: chatbot-builder
+description: Use when the user wants to build a new customer-care chatbot for any company or domain. Follows the QueenLine architecture: GitHub Pages frontend, Cloudflare Worker proxy, Gemini LLM, and Five Innovators agent personas. NOT for editing existing chatbots or general web development.
 ---
 
-# QueenLine Chatbot Builder
+# Chatbot Builder
 
 This skill codifies the process used to build the HiveBox Apiary Co. QueenLine chatbot. Use it to build a similar chatbot for any company or domain.
 
@@ -41,7 +41,7 @@ Each persona follows the scaffold: Identity, Bio, Role, Core beliefs, Boundaries
 Create `workers/<name>-api/index.js` with:
 - CORS headers on ALL responses (OPTIONS preflight + error responses)
 - Receives POST with `{ contents, system_instruction }`
-- Forwards to Gemini API using model from env var (not hardcoded)
+- Forwards to Gemini API
 - Returns `{ reply }` on success, `{ error }` on failure
 - References API key via `GEMINI_API_KEY` (set as Cloudflare secret)
 
@@ -66,7 +66,7 @@ Create `index.html` with:
 - **System prompt**: defines the chatbot persona with triage rules
 - **Conversation history**: maintained in memory, sent with each request
 
-Key patterns from the HiveBox implementation:
+Key patterns:
 - No API key gate (key lives in Worker secret)
 - First message is always the triage opening question
 - Quick-reply buttons update based on last bot response content
@@ -106,4 +106,3 @@ Key patterns from the HiveBox implementation:
 - The chatbot persona MUST state it is an AI colleague, not a human.
 - The system prompt must include triage rules specific to the company's #1 support issue.
 - Do not redesign the existing HiveBox chatbot unless explicitly asked.
-- If the user wants changes to the existing HiveBox deployment, use this skill only for guidance — edit the actual files directly.
